@@ -1,6 +1,5 @@
 import type { Accessor } from 'solid-js';
 import { createComputed, createMemo, createSignal, on } from 'solid-js';
-import type { Ref } from 'vue';
 import { createUninitializedAccessor } from '../../reactivity/primitives/uninitialized.ts';
 import type {
 BindDefinition,
@@ -19,7 +18,6 @@ StateModelDefinition,
 StateNode,
 ValueSignal,
 } from './NodeState.ts';
-import type { ValueNodeState } from './ValueNodeState';
 
 const defaultEvaluationResults = {
 	calculate: null as string | null,
@@ -65,7 +63,6 @@ export abstract class DescendantNodeState<Type extends DescendantNodeStateType>
 	// TODO: constraint, saveIncomplete(?)
 
 	calculate: Accessor<string> | null;
-	calculateVue: { dependencies: Array<Ref<string>>; evaluateExpression: () => ReturnType<AnyBindExpression["evaluate"]>; } | null | undefined;
 	isReadonly: Accessor<boolean>;
 	isRelevant: Accessor<boolean>;
 	isRequired: Accessor<boolean>;
@@ -101,7 +98,6 @@ export abstract class DescendantNodeState<Type extends DescendantNodeStateType>
 		const isSelfRelevant = this.createBindExpressionEvaluation(bind.relevant);
 
 		this.calculate = this.createOptionalBindExpressionEvaluation(bind.calculate);
-		this.calculateVue = this.temp(bind.calculate);
 		this.isReadonly = createMemo(() => parent.isReadonly() || isSelfReadonly());
 		this.isRelevant = createMemo(() => parent.isRelevant() && isSelfRelevant());
 		this.isRequired = this.createBindExpressionEvaluation(bind.required);
@@ -118,28 +114,6 @@ export abstract class DescendantNodeState<Type extends DescendantNodeStateType>
 		const [value] = this.valueState;
 
 		return value();
-	}
-
-	protected temp<Expression extends AnyBindExpression>(bindExpression: Expression) {
-		const { entry } = this;
-		const { dependencyExpressions, expression } = bindExpression;
-
-		if (expression == null) return undefined;
-		const { evaluator } = entry;
-
-		const evaluateExpression = () =>
-			bindExpression.evaluate(evaluator, this.node) as EvaluationResult<Expression>;
-
-		const dependencies = dependencyExpressions.map((dependencyExpression): Ref<string> => {
-				const reference = this.contextualizeDependencyExpression(dependencyExpression);
-				const state = entry.getState(reference) as ValueNodeState;
-				return state.vueValue;
-			});
-
-		return {
-			evaluateExpression, dependencies
-		}
-
 	}
 
 	// TODO: super naive, just meant to communicate a starting point/direction.

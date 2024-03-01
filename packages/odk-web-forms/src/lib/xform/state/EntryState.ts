@@ -1,5 +1,6 @@
 import { UnreachableError } from '@odk/common/lib/error/UnreachableError.ts';
 import { createMemo, type Accessor } from 'solid-js';
+import { createUninitialized } from '../../reactivity/primitives/uninitialized';
 import type { XFormXPathEvaluator } from '../../xpath/XFormXPathEvaluator.ts';
 import type { XFormDOM } from '../XFormDOM.ts';
 import type { XFormDefinition } from '../XFormDefinition.ts';
@@ -88,12 +89,13 @@ export class EntryState implements NodeState<'root'> {
 	readonly isRelevant = () => true;
 	readonly isRequired = () => false;
 
-	protected readonly referenceStateEntries: Accessor<ReferenceStateEntries>;
+	// Following are truly initialized in the setup() function
+	protected referenceStateEntries: Accessor<ReferenceStateEntries>;
 
 	protected stateByReference: Accessor<ReferenceStateMap>;
 
-	readonly instanceState: Accessor<Element>;
-	readonly serializedInstanceState: Accessor<string>;
+	instanceState: Accessor<Element>;
+	serializedInstanceState: Accessor<string>;
 
 	constructor(readonly form: XFormDefinition) {
 		const { root } = form.model;
@@ -120,14 +122,12 @@ export class EntryState implements NodeState<'root'> {
 		this.evaluator = instanceDOM.primaryInstanceEvaluator;
 		this.children = buildChildStates(this, this);
 
-		this.initializeState();
-
-		const referenceStateEntries = this.createReferenceStateEntries(this);
-
-		this.referenceStateEntries = referenceStateEntries;
-		this.stateByReference = createMemo(() => new Map(referenceStateEntries()));
-		this.instanceState = this.createInstanceState();
-		this.serializedInstanceState = this.createSerializedInstanceState();
+		// Moved true initialization of the following in the setup function
+		// this.initializeState();
+		this.referenceStateEntries = createUninitialized<ReferenceStateEntries>()[0];
+		this.stateByReference = createUninitialized<ReferenceStateMap>()[0];
+		this.instanceState = createUninitialized<Element>()[0];
+		this.serializedInstanceState = createUninitialized<string>()[0];
 	}
 
 	/**
@@ -176,6 +176,18 @@ export class EntryState implements NodeState<'root'> {
 	}
 
 	isStateInitialized = false;
+
+	// This function is run with the Proxy
+	setup(): void {
+		this.initializeState();
+
+		const referenceStateEntries = this.createReferenceStateEntries(this);
+
+		this.referenceStateEntries = referenceStateEntries;
+		this.stateByReference = createMemo(() => new Map(referenceStateEntries()));
+		this.instanceState = this.createInstanceState();
+		this.serializedInstanceState = this.createSerializedInstanceState();
+	}
 
 	initializeState(): void {
 		if (this.isStateInitialized) {
