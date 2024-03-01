@@ -2,21 +2,21 @@ import type { Accessor } from 'solid-js';
 import { createComputed, createMemo, createSignal, on } from 'solid-js';
 import { createUninitializedAccessor } from '../../reactivity/primitives/uninitialized.ts';
 import type {
-BindDefinition,
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- referenced in JSDoc
-BindExpression,
-BindExpressionType,
+	BindDefinition,
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars -- referenced in JSDoc
+	BindExpression,
+	BindExpressionType,
 } from '../model/BindDefinition.ts';
 import type { EntryState } from './EntryState.ts';
 import type {
-AnyNodeState,
-ChildStates,
-NodeState,
-NodeStateType,
-ParentState,
-StateModelDefinition,
-StateNode,
-ValueSignal,
+	AnyNodeState,
+	ChildStates,
+	NodeState,
+	NodeStateType,
+	ParentState,
+	StateModelDefinition,
+	StateNode,
+	ValueSignal,
 } from './NodeState.ts';
 
 const defaultEvaluationResults = {
