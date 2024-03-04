@@ -1,4 +1,5 @@
 import { JAVAROSA_NAMESPACE_URI } from '@odk/common/constants/xmlns.ts';
+import type { BodyDefinition } from '../body/BodyDefinition.ts';
 import type { RepeatDefinition } from '../body/RepeatDefinition.ts';
 import { BindDefinition } from './BindDefinition.ts';
 import { DescendentNodeDefinition } from './DescendentNodeDefinition.ts';
@@ -78,6 +79,7 @@ export class RepeatTemplateDefinition
 {
 	static parseModelNodes(
 		sequence: RepeatSequenceDefinition,
+		body: BodyDefinition,
 		modelNodes: readonly [Element, ...Element[]]
 	): ParsedRepeatNodes {
 		const { bind } = sequence;
@@ -89,7 +91,7 @@ export class RepeatTemplateDefinition
 			const [templateNode, ...rest] = splitInstanceNodes(modelNodes);
 
 			instanceNodes = rest;
-			template = new this(sequence, templateNode);
+			template = new this(sequence, body, templateNode);
 		} else {
 			// TODO: this is under the assumption that for any depth > 1, if a
 			// template has already been defined for the given form definition, any
@@ -122,6 +124,7 @@ export class RepeatTemplateDefinition
 
 	protected constructor(
 		protected readonly sequence: RepeatSequenceDefinition,
+		body: BodyDefinition,
 		protected readonly templateNode: ExplicitRepeatTemplateElement
 	) {
 		const {
@@ -139,7 +142,7 @@ export class RepeatTemplateDefinition
 
 		this.node = node;
 		this.nodeName = node.localName;
-		this.children = root.buildSubtree(this);
+		this.children = root.buildSubtree(this, body);
 	}
 
 	toJSON() {

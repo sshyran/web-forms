@@ -1,5 +1,6 @@
 import type {
 	AnyBodyElementDefinition,
+	BodyDefinition,
 	NonRepeatGroupElementDefinition,
 } from '../body/BodyDefinition.ts';
 import type { BindDefinition } from './BindDefinition.ts';
@@ -23,6 +24,7 @@ export class SubtreeDefinition
 
 	constructor(
 		parent: ParentNodeDefinition,
+		body: BodyDefinition,
 		bind: BindDefinition,
 		bodyElement: AnyBodyElementDefinition | null,
 		readonly node: Element
@@ -39,11 +41,11 @@ export class SubtreeDefinition
 		const { root } = parent;
 
 		this.nodeName = node.localName;
-		this.children = root.buildSubtree(this);
+		this.children = root.buildSubtree(this, body);
 	}
 
 	toJSON() {
-		const { parent, bodyElement, bind, root, ...rest } = this;
+		const { parent, bind, root, ...rest } = this;
 
 		return rest;
 	}

@@ -1,3 +1,4 @@
+import type { BodyDefinition } from '../body/BodyDefinition.ts';
 import { RepeatDefinition } from '../body/RepeatDefinition.ts';
 import { DescendentNodeDefinition } from './DescendentNodeDefinition.ts';
 import type { ChildNodeDefinition, NodeDefinition } from './NodeDefinition.ts';
@@ -16,6 +17,7 @@ export class RepeatInstanceDefinition
 
 	constructor(
 		protected readonly sequence: RepeatSequenceDefinition,
+		body: BodyDefinition,
 		readonly node: Element
 	) {
 		const {
@@ -28,7 +30,7 @@ export class RepeatInstanceDefinition
 		super(repeatSequenceParent, bind, repeatGroupBodyElement.repeat);
 
 		this.nodeName = sequence.nodeName;
-		this.children = root.buildSubtree(this);
+		this.children = root.buildSubtree(this, body);
 	}
 
 	toJSON() {

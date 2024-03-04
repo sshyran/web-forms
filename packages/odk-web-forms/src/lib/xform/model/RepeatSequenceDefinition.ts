@@ -1,3 +1,4 @@
+import type { BodyDefinition } from '../body/BodyDefinition.ts';
 import { RepeatGroupDefinition } from '../body/group/RepeatGroupDefinition.ts';
 import type { BindDefinition } from './BindDefinition.ts';
 import { DescendentNodeDefinition } from './DescendentNodeDefinition.ts';
@@ -31,17 +32,22 @@ export class RepeatSequenceDefinition
 
 	constructor(
 		parent: ParentNodeDefinition,
+		body: BodyDefinition,
 		bind: BindDefinition,
 		bodyElement: RepeatGroupDefinition,
 		modelNodes: readonly [Element, ...Element[]]
 	) {
 		super(parent, bind, bodyElement);
-		const { template, instanceNodes } = RepeatTemplateDefinition.parseModelNodes(this, modelNodes);
+		const { template, instanceNodes } = RepeatTemplateDefinition.parseModelNodes(
+			this,
+			body,
+			modelNodes
+		);
 
 		this.template = template;
 		this.nodeName = template.nodeName;
 		this.instances = instanceNodes.map((element) => {
-			return new RepeatInstanceDefinition(this, element);
+			return new RepeatInstanceDefinition(this, body, element);
 		});
 	}
 
